@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Users, Package, AlertCircle, Calendar, FileText, Target, Activity, CreditCard, PieChart as PieChartIcon, BarChart3, Download, RefreshCw, Settings, ChevronRight, ArrowUpRight, ArrowDownRight, Clock, CheckCircle } from 'lucide-react';
 
+allowedHosts: [
+  '.replit.dev',
+  '.replit.app',
+  '.repl.co',
+  'localhost'
+]
+
 const CFODashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedPeriod, setSelectedPeriod] = useState('month');
