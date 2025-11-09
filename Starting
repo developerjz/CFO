@@ -1,0 +1,777 @@
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, DollarSign, Users, Package, AlertCircle, Calendar, FileText, Target, Activity, CreditCard, PieChart as PieChartIcon, BarChart3, Download, RefreshCw, Settings, ChevronRight, ArrowUpRight, ArrowDownRight, Clock, CheckCircle } from 'lucide-react';
+
+const CFODashboard = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [selectedYear, setSelectedYear] = useState('2024');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Sample financial data
+  const [financialData] = useState({
+    revenue: 8750000,
+    expenses: 6125000,
+    netIncome: 2625000,
+    ebitda: 3150000,
+    cashBalance: 4200000,
+    ar: 2100000,
+    ap: 1050000,
+    inventory: 1575000
+  });
+
+  // KPI Metrics
+  const kpiMetrics = [
+    {
+      name: 'Revenue',
+      value: '$8.75M',
+      change: '+12.5%',
+      trend: 'up',
+      icon: DollarSign,
+      color: 'bg-green-500'
+    },
+    {
+      name: 'EBITDA',
+      value: '$3.15M',
+      change: '+8.2%',
+      trend: 'up',
+      icon: TrendingUp,
+      color: 'bg-blue-500'
+    },
+    {
+      name: 'Net Margin',
+      value: '30.0%',
+      change: '+2.1%',
+      trend: 'up',
+      icon: Activity,
+      color: 'bg-purple-500'
+    },
+    {
+      name: 'Cash Balance',
+      value: '$4.2M',
+      change: '-5.3%',
+      trend: 'down',
+      icon: CreditCard,
+      color: 'bg-yellow-500'
+    }
+  ];
+
+  // Revenue trend data
+  const revenueTrend = [
+    { month: 'Jan', revenue: 650000, expenses: 455000, profit: 195000 },
+    { month: 'Feb', revenue: 680000, expenses: 476000, profit: 204000 },
+    { month: 'Mar', revenue: 720000, expenses: 504000, profit: 216000 },
+    { month: 'Apr', revenue: 695000, expenses: 486500, profit: 208500 },
+    { month: 'May', revenue: 740000, expenses: 518000, profit: 222000 },
+    { month: 'Jun', revenue: 785000, expenses: 549500, profit: 235500 },
+    { month: 'Jul', revenue: 820000, expenses: 574000, profit: 246000 },
+    { month: 'Aug', revenue: 845000, expenses: 591500, profit: 253500 },
+    { month: 'Sep', revenue: 880000, expenses: 616000, profit: 264000 },
+    { month: 'Oct', revenue: 910000, expenses: 637000, profit: 273000 },
+    { month: 'Nov', revenue: 925000, expenses: 647500, profit: 277500 },
+    { month: 'Dec', revenue: 950000, expenses: 665000, profit: 285000 }
+  ];
+
+  // Cash flow data
+  const cashFlowData = [
+    { month: 'Jan', operating: 280000, investing: -150000, financing: -50000, net: 80000 },
+    { month: 'Feb', operating: 295000, investing: -100000, financing: -30000, net: 165000 },
+    { month: 'Mar', operating: 310000, investing: -120000, financing: -40000, net: 150000 },
+    { month: 'Apr', operating: 285000, investing: -80000, financing: -35000, net: 170000 },
+    { month: 'May', operating: 320000, investing: -110000, financing: -45000, net: 165000 },
+    { month: 'Jun', operating: 335000, investing: -95000, financing: -50000, net: 190000 }
+  ];
+
+  // Budget vs Actual data
+  const budgetData = [
+    { category: 'Sales', budget: 750000, actual: 820000, variance: 70000 },
+    { category: 'Marketing', budget: 120000, actual: 115000, variance: 5000 },
+    { category: 'Operations', budget: 350000, actual: 380000, variance: -30000 },
+    { category: 'R&D', budget: 180000, actual: 165000, variance: 15000 },
+    { category: 'Admin', budget: 95000, actual: 92000, variance: 3000 },
+    { category: 'IT', budget: 85000, actual: 88000, variance: -3000 }
+  ];
+
+  // Expense breakdown
+  const expenseBreakdown = [
+    { name: 'Salaries', value: 2450000, percentage: 40 },
+    { name: 'Operations', value: 1837500, percentage: 30 },
+    { name: 'Marketing', value: 918750, percentage: 15 },
+    { name: 'R&D', value: 612500, percentage: 10 },
+    { name: 'Admin', value: 306250, percentage: 5 }
+  ];
+
+  // Financial ratios
+  const financialRatios = [
+    { name: 'Current Ratio', value: '2.4', status: 'healthy', target: '2.0' },
+    { name: 'Quick Ratio', value: '1.8', status: 'healthy', target: '1.5' },
+    { name: 'Debt-to-Equity', value: '0.35', status: 'healthy', target: '<0.5' },
+    { name: 'ROE', value: '22.5%', status: 'healthy', target: '>20%' },
+    { name: 'ROA', value: '15.8%', status: 'warning', target: '>18%' },
+    { name: 'Days Sales Outstanding', value: '45', status: 'warning', target: '<40' }
+  ];
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1000);
+  };
+
+  const COLORS = ['#10b981', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444'];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">CFO Dashboard</h1>
+              <p className="text-sm text-gray-500 mt-1">Financial Intelligence Platform</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <select 
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="px-4 py-2 border rounded-lg text-sm"
+              >
+                <option value="day">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+              </select>
+              <select 
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="px-4 py-2 border rounded-lg text-sm"
+              >
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+              </select>
+              <button
+                onClick={handleRefresh}
+                className={`p-2 border rounded-lg hover:bg-gray-50 ${refreshing ? 'animate-spin' : ''}`}
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+              <button className="p-2 border rounded-lg hover:bg-gray-50">
+                <Download className="w-5 h-5" />
+              </button>
+              <button className="p-2 border rounded-lg hover:bg-gray-50">
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Navigation Tabs */}
+        <div className="px-6 flex gap-6 border-t">
+          {[
+            { id: 'dashboard', label: 'Executive Dashboard', icon: PieChartIcon },
+            { id: 'financial', label: 'Financial Statements', icon: FileText },
+            { id: 'cashflow', label: 'Cash Flow', icon: Activity },
+            { id: 'budget', label: 'Budget Analysis', icon: Target },
+            { id: 'kpi', label: 'KPI Tracking', icon: BarChart3 }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 py-3 px-1 border-b-2 transition-colors ${
+                activeTab === tab.id 
+                  ? 'border-blue-500 text-blue-600' 
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              <span className="text-sm font-medium">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="p-6">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {kpiMetrics.map((kpi, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 ${kpi.color} rounded-lg bg-opacity-10`}>
+                      <kpi.icon className={`w-6 h-6 text-${kpi.color.replace('bg-', '')}`} />
+                    </div>
+                    <span className={`flex items-center text-sm font-semibold ${
+                      kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {kpi.change}
+                      {kpi.trend === 'up' ? 
+                        <ArrowUpRight className="w-4 h-4 ml-1" /> : 
+                        <ArrowDownRight className="w-4 h-4 ml-1" />
+                      }
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">{kpi.value}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{kpi.name}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Revenue & Profit Trend */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Revenue & Profit Trend</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={revenueTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(value) => `$${(value/1000).toFixed(0)}k`} />
+                    <Legend />
+                    <Area type="monotone" dataKey="revenue" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Revenue" />
+                    <Area type="monotone" dataKey="profit" stackId="2" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} name="Profit" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Expense Breakdown</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={expenseBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name} ${percentage}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {expenseBreakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `$${(value/1000000).toFixed(2)}M`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Financial Ratios */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Key Financial Ratios</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {financialRatios.map((ratio, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-sm text-gray-600">{ratio.name}</p>
+                      <p className="text-xl font-bold text-gray-900">{ratio.value}</p>
+                      <p className="text-xs text-gray-500 mt-1">Target: {ratio.target}</p>
+                    </div>
+                    <div className={`p-2 rounded-lg ${
+                      ratio.status === 'healthy' ? 'bg-green-100' : 'bg-yellow-100'
+                    }`}>
+                      {ratio.status === 'healthy' ? 
+                        <CheckCircle className="w-5 h-5 text-green-600" /> :
+                        <AlertCircle className="w-5 h-5 text-yellow-600" />
+                      }
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'financial' && (
+          <div className="space-y-6">
+            {/* Income Statement */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Income Statement - {selectedYear}</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-600">Revenue</span>
+                  <span className="font-semibold">$8,750,000</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600 pl-4">Cost of Goods Sold</span>
+                  <span className="text-red-600">-$3,500,000</span>
+                </div>
+                <div className="flex justify-between py-2 border-b font-semibold">
+                  <span className="text-gray-900">Gross Profit</span>
+                  <span>$5,250,000</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600 pl-4">Operating Expenses</span>
+                  <span className="text-red-600">-$2,100,000</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600 pl-4">Depreciation & Amortization</span>
+                  <span className="text-red-600">-$525,000</span>
+                </div>
+                <div className="flex justify-between py-2 border-b font-semibold">
+                  <span className="text-gray-900">EBITDA</span>
+                  <span>$3,150,000</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600 pl-4">Interest Expense</span>
+                  <span className="text-red-600">-$175,000</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600 pl-4">Taxes</span>
+                  <span className="text-red-600">-$350,000</span>
+                </div>
+                <div className="flex justify-between py-3 border-t-2 text-lg font-bold">
+                  <span className="text-gray-900">Net Income</span>
+                  <span className="text-green-600">$2,625,000</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Balance Sheet Summary */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Assets</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Cash & Equivalents</span>
+                    <span className="font-semibold">$4,200,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Accounts Receivable</span>
+                    <span className="font-semibold">$2,100,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Inventory</span>
+                    <span className="font-semibold">$1,575,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">PP&E (Net)</span>
+                    <span className="font-semibold">$8,400,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Other Assets</span>
+                    <span className="font-semibold">$1,050,000</span>
+                  </div>
+                  <div className="flex justify-between py-3 border-t font-bold">
+                    <span className="text-gray-900">Total Assets</span>
+                    <span>$17,325,000</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Liabilities & Equity</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Accounts Payable</span>
+                    <span className="font-semibold">$1,050,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Short-term Debt</span>
+                    <span className="font-semibold">$875,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Long-term Debt</span>
+                    <span className="font-semibold">$3,500,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Other Liabilities</span>
+                    <span className="font-semibold">$700,000</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-600">Shareholders' Equity</span>
+                    <span className="font-semibold">$11,200,000</span>
+                  </div>
+                  <div className="flex justify-between py-3 border-t font-bold">
+                    <span className="text-gray-900">Total Liab. & Equity</span>
+                    <span>$17,325,000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'cashflow' && (
+          <div className="space-y-6">
+            {/* Cash Flow Chart */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Cash Flow Analysis</h3>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={cashFlowData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(value) => `$${(value/1000).toFixed(0)}k`} />
+                  <Legend />
+                  <Bar dataKey="operating" fill="#10b981" name="Operating" />
+                  <Bar dataKey="investing" fill="#3b82f6" name="Investing" />
+                  <Bar dataKey="financing" fill="#a855f7" name="Financing" />
+                  <Bar dataKey="net" fill="#f59e0b" name="Net Cash Flow" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Cash Flow Statement */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Cash Flow Statement - Last 6 Months</h3>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Operating Activities</h4>
+                  <div className="space-y-2 pl-4">
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Net Income</span>
+                      <span>$1,650,000</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Depreciation</span>
+                      <span>$262,500</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Working Capital Changes</span>
+                      <span className="text-red-600">-$367,500</span>
+                    </div>
+                    <div className="flex justify-between py-2 font-semibold border-t">
+                      <span>Net Cash from Operations</span>
+                      <span className="text-green-600">$1,545,000</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Investing Activities</h4>
+                  <div className="space-y-2 pl-4">
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Capital Expenditures</span>
+                      <span className="text-red-600">-$455,000</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Acquisitions</span>
+                      <span className="text-red-600">-$200,000</span>
+                    </div>
+                    <div className="flex justify-between py-2 font-semibold border-t">
+                      <span>Net Cash from Investing</span>
+                      <span className="text-red-600">-$655,000</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Financing Activities</h4>
+                  <div className="space-y-2 pl-4">
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Debt Proceeds</span>
+                      <span>$150,000</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Debt Repayments</span>
+                      <span className="text-red-600">-$250,000</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-gray-600">Dividends Paid</span>
+                      <span className="text-red-600">-$150,000</span>
+                    </div>
+                    <div className="flex justify-between py-2 font-semibold border-t">
+                      <span>Net Cash from Financing</span>
+                      <span className="text-red-600">-$250,000</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between py-3 border-t-2 text-lg font-bold">
+                  <span className="text-gray-900">Net Change in Cash</span>
+                  <span className="text-green-600">$640,000</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cash Runway */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Cash Runway Analysis</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Current Cash Balance</p>
+                  <p className="text-3xl font-bold text-gray-900">$4.2M</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Monthly Burn Rate</p>
+                  <p className="text-3xl font-bold text-red-600">$385K</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Runway (Months)</p>
+                  <p className="text-3xl font-bold text-green-600">10.9</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'budget' && (
+          <div className="space-y-6">
+            {/* Budget vs Actual Chart */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Budget vs Actual Performance</h3>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={budgetData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="category" />
+                  <YAxis tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(value) => `$${(value/1000).toFixed(0)}k`} />
+                  <Legend />
+                  <Bar dataKey="budget" fill="#94a3b8" name="Budget" />
+                  <Bar dataKey="actual" fill="#3b82f6" name="Actual" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Variance Analysis */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Variance Analysis</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Department</th>
+                      <th className="text-right py-3 px-4">Budget</th>
+                      <th className="text-right py-3 px-4">Actual</th>
+                      <th className="text-right py-3 px-4">Variance</th>
+                      <th className="text-right py-3 px-4">% Variance</th>
+                      <th className="text-center py-3 px-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {budgetData.map((item, index) => {
+                      const percentVariance = ((item.variance / item.budget) * 100).toFixed(1);
+                      const isPositive = item.variance >= 0;
+                      return (
+                        <tr key={index} className="border-b">
+                          <td className="py-3 px-4 font-medium">{item.category}</td>
+                          <td className="text-right py-3 px-4">${(item.budget/1000).toFixed(0)}k</td>
+                          <td className="text-right py-3 px-4">${(item.actual/1000).toFixed(0)}k</td>
+                          <td className={`text-right py-3 px-4 font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {isPositive ? '+' : ''}{(item.variance/1000).toFixed(0)}k
+                          </td>
+                          <td className={`text-right py-3 px-4 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {isPositive ? '+' : ''}{percentVariance}%
+                          </td>
+                          <td className="text-center py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                              {isPositive ? 'Under' : 'Over'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="font-bold">
+                      <td className="py-3 px-4">Total</td>
+                      <td className="text-right py-3 px-4">$1,580k</td>
+                      <td className="text-right py-3 px-4">$1,640k</td>
+                      <td className="text-right py-3 px-4 text-red-600">-$60k</td>
+                      <td className="text-right py-3 px-4 text-red-600">-3.8%</td>
+                      <td className="text-center py-3 px-4">
+                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                          Review
+                        </span>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            {/* Forecast Accuracy */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Forecast Accuracy Metrics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Revenue Accuracy</p>
+                  <p className="text-2xl font-bold text-gray-900">94.2%</p>
+                  <p className="text-xs text-green-600 mt-1">↑ 2.1% from last quarter</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Expense Accuracy</p>
+                  <p className="text-2xl font-bold text-gray-900">91.8%</p>
+                  <p className="text-xs text-red-600 mt-1">↓ 1.3% from last quarter</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Cash Flow Accuracy</p>
+                  <p className="text-2xl font-bold text-gray-900">88.5%</p>
+                  <p className="text-xs text-green-600 mt-1">↑ 3.7% from last quarter</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Overall Accuracy</p>
+                  <p className="text-2xl font-bold text-gray-900">91.5%</p>
+                  <p className="text-xs text-green-600 mt-1">↑ 1.5% from last quarter</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'kpi' && (
+          <div className="space-y-6">
+            {/* KPI Performance Grid */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">KPI Performance Scorecard</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { name: 'Revenue Growth', value: '12.5%', target: '10%', achieved: true, trend: [65, 68, 72, 69, 74, 78] },
+                  { name: 'Gross Margin', value: '60%', target: '58%', achieved: true, trend: [58, 59, 60, 59, 60, 60] },
+                  { name: 'Operating Margin', value: '24%', target: '25%', achieved: false, trend: [22, 23, 24, 23, 24, 24] },
+                  { name: 'Customer Acquisition', value: '156', target: '150', achieved: true, trend: [120, 125, 135, 140, 148, 156] },
+                  { name: 'Customer Retention', value: '92%', target: '90%', achieved: true, trend: [88, 89, 90, 91, 91, 92] },
+                  { name: 'Employee Satisfaction', value: '8.2', target: '8.0', achieved: true, trend: [7.8, 7.9, 8.0, 8.1, 8.1, 8.2] }
+                ].map((kpi, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="text-sm text-gray-600">{kpi.name}</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">{kpi.value}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        kpi.achieved ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {kpi.achieved ? 'Achieved' : 'Below Target'}
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Target: {kpi.target}</span>
+                        <span>{kpi.achieved ? '✓' : '✗'}</span>
+                      </div>
+                      <ResponsiveContainer width="100%" height={40}>
+                        <LineChart data={kpi.trend.map((v, i) => ({ value: v }))}>
+                          <Line type="monotone" dataKey="value" stroke={kpi.achieved ? '#10b981' : '#ef4444'} strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Department Performance */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Department Performance Matrix</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Department</th>
+                      <th className="text-center py-3 px-4">Efficiency</th>
+                      <th className="text-center py-3 px-4">Quality</th>
+                      <th className="text-center py-3 px-4">Innovation</th>
+                      <th className="text-center py-3 px-4">Overall Score</th>
+                      <th className="text-center py-3 px-4">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { dept: 'Sales', efficiency: 92, quality: 88, innovation: 85, overall: 88, trend: 'up' },
+                      { dept: 'Marketing', efficiency: 85, quality: 90, innovation: 92, overall: 89, trend: 'up' },
+                      { dept: 'Operations', efficiency: 88, quality: 86, innovation: 78, overall: 84, trend: 'stable' },
+                      { dept: 'R&D', efficiency: 78, quality: 92, innovation: 95, overall: 88, trend: 'up' },
+                      { dept: 'Finance', efficiency: 94, quality: 95, innovation: 82, overall: 90, trend: 'stable' },
+                      { dept: 'HR', efficiency: 86, quality: 88, innovation: 80, overall: 85, trend: 'down' }
+                    ].map((dept, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="py-3 px-4 font-medium">{dept.dept}</td>
+                        <td className="text-center py-3 px-4">
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                            dept.efficiency >= 90 ? 'bg-green-100 text-green-700' :
+                            dept.efficiency >= 80 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {dept.efficiency}%
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                            dept.quality >= 90 ? 'bg-green-100 text-green-700' :
+                            dept.quality >= 80 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {dept.quality}%
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                            dept.innovation >= 90 ? 'bg-green-100 text-green-700' :
+                            dept.innovation >= 80 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {dept.innovation}%
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          <span className="text-lg font-bold">{dept.overall}%</span>
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          {dept.trend === 'up' && <ArrowUpRight className="w-5 h-5 text-green-500 inline" />}
+                          {dept.trend === 'down' && <ArrowDownRight className="w-5 h-5 text-red-500 inline" />}
+                          {dept.trend === 'stable' && <span className="text-gray-400">—</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Strategic Initiatives */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Strategic Initiatives Progress</h3>
+              <div className="space-y-4">
+                {[
+                  { name: 'Digital Transformation', progress: 75, status: 'on-track', deadline: 'Q2 2024' },
+                  { name: 'Market Expansion - APAC', progress: 45, status: 'delayed', deadline: 'Q3 2024' },
+                  { name: 'Cost Optimization Program', progress: 90, status: 'ahead', deadline: 'Q1 2024' },
+                  { name: 'ESG Implementation', progress: 60, status: 'on-track', deadline: 'Q4 2024' }
+                ].map((initiative, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium text-gray-900">{initiative.name}</h4>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        initiative.status === 'ahead' ? 'bg-green-100 text-green-700' :
+                        initiative.status === 'on-track' ? 'bg-blue-100 text-blue-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {initiative.status === 'ahead' ? 'Ahead of Schedule' :
+                         initiative.status === 'on-track' ? 'On Track' : 'Delayed'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              initiative.status === 'ahead' ? 'bg-green-500' :
+                              initiative.status === 'on-track' ? 'bg-blue-500' :
+                              'bg-red-500'
+                            }`}
+                            style={{ width: `${initiative.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                      <span className="text-sm font-semibold">{initiative.progress}%</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Deadline: {initiative.deadline}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CFODashboard;
